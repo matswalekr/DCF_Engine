@@ -11,10 +11,11 @@ For usage, the [dcf_initialiser](/code/dcf_initialiser.py) needs to be updated w
 
 ## Assumptions
 The DCF is build on the following assumptions:
-- **Growth of sales**: Average throughout the historic period
-- **Risk-free rate**: 10 year US treasury bills
-- **Market return**: Average return of S&P500 throughout the historic period
-- **Beta Equity**: Calculated based on other assumptions
+- **Growth of sales**:  Average throughout the historic period
+- **Risk-free rate**:   10 year US treasury bills
+- **Market return**:    Average return of S&P500 throughout the historic period
+- **Beta Equity**:      Calculated based on other assumptions
+- **Financial Ratios**: Average of the last years
 
 ## Problems & Work-to-be-done
 While the code works, the Excel usually has problems. It raises a warning when opening and does not include the full Football field chart with all its info. This problem is likely due to the libraries used and not the code itself. This may be changed in the future.
