@@ -5,7 +5,7 @@ This file helps to create DCFs for listed companies of the S&P500 index. The DCF
 
 The Excel also shows other valuation methods such as comparable multiples and historic market valuations.
 
-Note that the Excel file is mainly controlled through the "Assumptions" sheet. Further changes can be made to the other files, but they may need to be unlocked or unhidden.
+Note that the Excel file is mainly controlled through the "Assumptions" sheet. Further changes can be made to the other sheets, but they may need to be unlocked or unhidden.
 
 For usage, the [dcf_initialiser](/code/dcf_initialiser.py) needs to be updated with the **company's Ticker**, the **Ticker of its competitors**, the **historic years** to take into account and the **years to forecast** for the DCF.
 
