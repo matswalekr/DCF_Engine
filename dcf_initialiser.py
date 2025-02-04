@@ -1,0 +1,256 @@
+from fmpsdk_query import FMPSDK_Query_Handler
+from yfinance_query import Yfinance_Query_Handler
+from wrds_query import WRDS_Query_Handler
+from database_query import Database_Query_Handler
+from Excel_Engine import open_excel, Excel_write
+from gpt_query import LLM_Query_Handler
+
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+
+from typing import List, Tuple
+import pandas as pd
+import warnings
+
+
+def get_latest_second_latest(statement: pd.DataFrame, column: str)->Tuple[pd.DataFrame, pd.DataFrame]:
+    """Returns a tuple of (latest_value, second_latest_value)"""
+    sorted_statement = statement.sort_index(level="year", ascending=False).loc[column]
+    latest_value = sorted_statement.groupby("ticker").first()
+    second_latest_value = sorted_statement.groupby("ticker").nth(1).droplevel("year")
+    return (latest_value, second_latest_value)
+
+def get_competitor_info(ticker: str)-> pd.DataFrame:
+    
+    """
+    Gets the info of competitors for the comparison of multiples"""
+
+    fmpsdk_query_handler = FMPSDK_Query_Handler()
+    yfinance_query_handler = Yfinance_Query_Handler()
+    wrds_query_handler = WRDS_Query_Handler()
+    database_query_handler = Database_Query_Handler()
+
+    #competitors = fmpsdk_query_handler.competitors(ticker = ticker, lower_multiple=0)
+    competitors = ["GOOGL", "DELL", "MSFT", "NFLX"]
+
+    if len(competitors) == 0:
+        warnings.warn(f"No competitors of {ticker} found", UserWarning)
+        return None
+
+    if database_query_handler.get_ratios(tickers = competitors) is None:
+
+        balance_sheets: pd.DataFrame = wrds_query_handler.balance_sheet(tickers = competitors, years = [2024, 2023,2022])
+        income_statements: pd.DataFrame = wrds_query_handler.income_statement(tickers = competitors, years = [2024, 2023,2022])
+
+        today = datetime.now()
+        latest_share_prices = yfinance_query_handler.ticker_prices_daily(tickers = competitors, 
+                                                                         end = datetime.now(),
+                                                                         start = today - relativedelta(days = 3))["Close"].iloc[0]
+        
+        shares_outstanding: pd.DataFrame = yfinance_query_handler.number_shares_outstanding(tickers = competitors)
+
+
+        # Create a new dataframe to hold the information
+        df = pd.DataFrame(index = competitors)
+
+        # Add the data for the latest share prices
+        df["Share Price"] = latest_share_prices
+        df["Shares outstanding"] = shares_outstanding
+
+        # Market value of equities
+        df["Equity Value"] = df["Share Price"] * df["Shares outstanding"] / 1_000_000 # In million USD
+
+        # Get the necessary information from wrds
+        latest_revenue, second_latest_revenues = get_latest_second_latest(income_statements, "revenues")
+        latest_cash, second_latest_cash = get_latest_second_latest(balance_sheets, "cashandequivalents")
+        latest_total_debt, second_latest_total_debt = [current_debt + non_current_debt 
+                                                       for current_debt, non_current_debt in
+                                                        zip(get_latest_second_latest(balance_sheets, "currentdebt"),  
+                                                              get_latest_second_latest(balance_sheets, "longtermdebt"))]
+
+        latest_ebitda, second_latest_ebitda = [ebit + dna 
+                                               for ebit, dna in
+                                               zip(get_latest_second_latest(income_statements, "ebit"),
+                                                   get_latest_second_latest(income_statements, "depreciationandamortisation"))]
+
+        # Assign the revenues
+        df["Revenues FY0"] = latest_revenue
+        df["Revenues FY-1"] = second_latest_revenues
+    
+        # Assign the EBITDA
+        df["EBITDA FY0"] = latest_ebitda
+        df["EBITDA FY-1"] = second_latest_ebitda
+
+        # Calculate and assign the enterprise value
+        df ["Enterprise FY0"] = df["Equity Value"] + latest_total_debt - latest_cash
+        df ["Enterprise FY-1"] = df["Equity Value"] + second_latest_total_debt - second_latest_cash
+
+        # Calculate and assign the EV/revenues
+        df["EV/Revenues FY0"] = df["Enterprise FY0"] / df["Revenues FY0"]
+        df["EV/Revenues FY-1"] = df["Enterprise FY-1"] / df["Revenues FY-1"]
+
+        # Calculate and assign the EV/EBITDA
+        df["EV/EBITDA FY0"] = df["Enterprise FY0"] / df["EBITDA FY0"]
+        df["EV/EBITDA FY-1"] = df["Enterprise FY-1"] / df["EBITDA FY-1"]
+
+        df["Long name"] = [yfinance_query_handler.company_name(ticker = ticker) for ticker in df.index]
+
+        # Format the dataframe such that it matches the needed format
+        df_formated = df[["Long name", "Equity Value", "Enterprise FY0", 
+                        "EV/Revenues FY-1", "EV/Revenues FY0",
+                        "EV/EBITDA FY-1", "EV/EBITDA FY0"]]
+
+        return df_formated
+
+def get_list_years(number_years: int)-> List[int]:
+
+    current_year =  int(datetime.now().year)
+    historic_years = [current_year - i for i in range(number_years)]
+
+    return historic_years
+
+def seed_years(doc:Excel_write, start_year: int, number_years:int)->None:
+    start_cell = "C2"
+    sheet_name = "Income Statement Forecast"
+    
+    df = pd.DataFrame([year for year in range(start_year, start_year+1+number_years)], columns=["years"]).T
+    
+    doc.set_cells_pandas(start_cell = start_cell,sheet_name=sheet_name, df = df)
+
+def get_latest_financial_statements(historic_years_number: int, ticker: str)->Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, int]:
+    """
+    Returns: (balance_sheet, income_statement, cashflow_statement, first_year)
+    """
+
+    def get_financial_statements(ticker:str, years: List[int])->Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+        """
+        Returns: (balance_sheet, income_statement, cashflow_statement)
+        """
+
+        wrds = WRDS_Query_Handler()
+
+        balance_sheet: pd.DataFrame = wrds.balance_sheet(ticker = ticker, years = years)
+        income_statement: pd.DataFrame = wrds.income_statement(ticker = ticker, years = years)
+        cashflow_statement: pd.DataFrame = wrds.cash_flow_statement(ticker = ticker, years = years)
+
+        return (balance_sheet, income_statement, cashflow_statement)
+    
+    historic_years: List[int] = get_list_years(historic_years_number)
+
+    try:
+        balance_sheet, income_statement, cash_flow_statement = get_financial_statements(ticker = ticker, years = historic_years)
+    
+
+    except Exception as _:
+        # Exception raised if not yet released financial statements
+        # Fall back to last year
+        # If the error is persistent, then there is a problem with the query
+        historic_years = get_list_years(historic_years_number + 1)[1::]
+
+        balance_sheet, income_statement, cash_flow_statement = get_financial_statements(ticker = ticker, years = historic_years)
+        warnings.warn(f"\nThe financial statements for {ticker} in year {datetime.now().year} are not available. Fall back on year {historic_years[0]}.\nThe financial statements might not yet be released.\n", 
+                      UserWarning)
+
+
+    return (balance_sheet, income_statement, cash_flow_statement, historic_years[0])
+
+def check_years(historic_years_number: int, forecast_years_number: int)-> Tuple[int, int]:
+    """Checks if the years used match the constraint of the Excel sheet.\n
+    If they dont match, it warns the user and uses the respective minimum or maximum years\n
+    Returns a tuple of (historic_years_number, forecast_years_number)"""
+    # Constraint from Excel template on how many years can be forecasted
+    MAX_YEARS_FORECASTABLE: int = 10
+    MAX_YEARS_HISTORIC: int = 10
+
+    MIN_YEARS_HISTORIC: int = 3
+
+    if forecast_years_number > MAX_YEARS_FORECASTABLE:
+        warnings.warn(f"Trying to forecast {forecast_years_number} years, but the max years that can be forecasted are {MAX_YEARS_FORECASTABLE}.\nFall back to {MAX_YEARS_FORECASTABLE} years\n",
+                      UserWarning)
+        forecast_years_number = MAX_YEARS_FORECASTABLE
+    elif forecast_years_number < 1:
+        warnings.warn(f"Trying to forecast {forecast_years_number} years, but the min years that need to be forecasted is 1.\nFall back to 1 years\n",
+                      UserWarning)
+        forecast_years_number = 1
+
+    if historic_years_number > MAX_YEARS_HISTORIC:
+        warnings.warn(f"Trying to use {forecast_years_number} historic years, but the max historic years that can be used are {MAX_YEARS_HISTORIC}.\nFall back to {MAX_YEARS_HISTORIC} years\n",
+                      UserWarning)
+        historic_years_number = MAX_YEARS_HISTORIC
+    elif historic_years_number < MIN_YEARS_HISTORIC:
+        warnings.warn(f"Trying to use {forecast_years_number} historic years, but the min historic years that can be used are {MIN_YEARS_HISTORIC}.\nFall back to {MIN_YEARS_HISTORIC} years\n",
+                      UserWarning)
+        historic_years_number = MIN_YEARS_HISTORIC
+    
+    return (historic_years_number, forecast_years_number)
+
+
+def prepare_and_save_excel()->None:
+    
+    #ticker = str(input("Please select a ticker (Currently only NA supported): "))
+    ticker = "AAPL"
+
+    historic_years_number: int = 10
+    forecast_years_number: int = 8
+
+    # Check if the years match the requirements of the excel template
+    historic_years_number, forecast_years_number = check_years(historic_years_number = historic_years_number, forecast_years_number = forecast_years_number)
+
+    balance_sheet, income_statement, cash_flow_statement, start_year = get_latest_financial_statements(ticker = ticker, historic_years_number = historic_years_number)
+
+    name_of_file_inter: str = f"intermediateDCF/DCF_{ticker}_{start_year}.xlsx"
+    name_file_final:str = f"DCFs_folder/DCF_{ticker}_{start_year}.xls"
+
+
+    yf_query_handler = Yfinance_Query_Handler()
+
+    beta_equity: float = yf_query_handler.beta_quity(ticker=ticker, time_frame_years=historic_years_number)
+    risk_free_return: float = yf_query_handler.risk_free_rate()
+    market_return: float = yf_query_handler.snp500_return(time_frame_years=historic_years_number)
+    industry:str = yf_query_handler.industry(ticker = ticker)
+    max_price, min_price = yf_query_handler.high_low_52_weeks(ticker=ticker)
+    name:str = yf_query_handler.company_name(ticker = ticker)
+
+
+    fmpsdk_query_handler = FMPSDK_Query_Handler()
+
+    shares_outstanding: int = fmpsdk_query_handler.number_shares(ticker = ticker)
+
+    competitor_info: pd.DataFrame = get_competitor_info(ticker = ticker)
+
+    with open_excel(path = "DCF_template.xltm", mode = "w") as doc:
+
+        # Reset the path to match the output file
+        doc.path = name_of_file_inter
+
+        doc["Ticker"] = ticker
+        doc["Forecasted_Years"] = historic_years_number
+        doc["Start_Year"] = start_year
+        doc["Years_Forecasted"] = forecast_years_number
+        doc["Beta_Equity"] = beta_equity
+        doc["Riskfree_Return"] = risk_free_return
+        doc["Market_Return"] = market_return
+        doc["Industry"] = industry
+        doc["Shares_Outstanding"] = shares_outstanding
+        doc["High_Share_Price"] = max_price
+        doc["Low_Share_Price"] = min_price
+        doc["Name"] = name
+
+
+        doc.set_cells_pandas(start_cell = "C5", df = balance_sheet, sheet_name = "Balance Sheet Historic", index = False)
+        doc.set_cells_pandas(start_cell="C5", df = income_statement, sheet_name = "Income Statement Historic", index = False)
+        doc.set_cells_pandas(start_cell="C5", df = cash_flow_statement, sheet_name = "Cash flow statement Historic", index = False)
+
+        if competitor_info is not None:
+            doc.set_cells_pandas(start_cell="B23", df = competitor_info, sheet_name = "Comparable multiples", index = False)
+
+        doc.save(path = name_of_file_inter)
+
+        doc.save(path = name_file_final)
+
+
+def main()-> None:
+    prepare_and_save_excel()
+
+if __name__ == "__main__":
+    main()
