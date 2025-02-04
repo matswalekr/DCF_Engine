@@ -11,7 +11,7 @@ For usage, the [dcf_initialiser](/code/dcf_initialiser.py) needs to be updated w
 
 ## Assumptions
 The DCF is build on the following assumptions:
-- **Growth of sales**: Average thorughout the historic period
+- **Growth of sales**: Average throughout the historic period
 - **Risk-free rate**: 10 year US treasury bills
 - **Market return**: Average return of S&P500 throughout the historic period
 - **Beta Equity**: Calculated based on other assumptions
