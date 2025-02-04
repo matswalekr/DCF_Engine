@@ -1,9 +1,0 @@
-sqlite3
-pandas
-wrds
-openpyxl
-pycel
-fmpsdk
-openai
-numpy
-yfinance
