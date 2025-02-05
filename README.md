@@ -19,8 +19,7 @@ The DCF is build on the following assumptions:
 
 ## Problems & Work-to-be-done
 While the code works, the Excel usually has problems. It raises a warning when opening and does not include the full Football field chart with all its info. This problem is likely due to the libraries used and not the code itself. This may be changed in the future.
-
-So far, the code still expects hardcoded names in the [dcf_initialised](dcf_initialiser.py) file, as well as the duration of the forecast. In the future, this will be moved to the command line.  
+ 
 In addition, the competitors need to be manually inputted and are not generated automatically. While the [fmpsdk](code/fmpsdk_query/fmpsdk_query.py) code has a method to query competitors, it does not work reliably and should not be used without manual double-checking.  
 In the future, a database of the info should be established such that the financial data for companies does not need to be queried every time again.
 
