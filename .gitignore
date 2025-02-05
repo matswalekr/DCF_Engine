@@ -48,3 +48,6 @@ coverage.xml
 
 # File where wrds stores their password
 .pgpass
+
+# The output Excel files
+*.xlsx

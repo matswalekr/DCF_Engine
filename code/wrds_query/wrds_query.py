@@ -12,7 +12,8 @@ import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv(dotenv_path="keys.env")
+dotenv_path = os.path.join(os.path.dirname(__file__), "../../keys.env")
+load_dotenv(dotenv_path=dotenv_path)
 
 def timeit(func):
     def wrapper(*args, **kwargs):
@@ -51,14 +52,15 @@ async def task_wrapper(function: Callable, *args):
 class WRDS_Query_Handler():
 
     def __init__(self)->None:
-        self.username: str = os.getenv("username", "")
+        self.username: str = os.getenv("wrds_username", "")
         if not self.username:
             raise ValueError("No username found in environment variables")
         self.db = wrds.Connection(wrds_username = self.username)
         pd.set_option('future.no_silent_downcasting', True)
 
     def __del__(self)-> None:
-        self.db.close()
+        if self.db:
+            self.db.close()
 
     @staticmethod
     def format(df: pd.DataFrame) -> pd.DataFrame:

@@ -185,21 +185,15 @@ def check_years(historic_years_number: int, forecast_years_number: int)-> Tuple[
     return (historic_years_number, forecast_years_number)
 
 
-def prepare_and_save_excel()->None:
-    
-    #ticker = str(input("Please select a ticker (Currently only NA supported): "))
-    ticker = "AAPL"
-
-    historic_years_number: int = 10
-    forecast_years_number: int = 8
+def prepare_and_save_excel(ticker: str, historic_years_number:int,forecast_years_number: int)->None:
 
     # Check if the years match the requirements of the excel template
     historic_years_number, forecast_years_number = check_years(historic_years_number = historic_years_number, forecast_years_number = forecast_years_number)
 
     balance_sheet, income_statement, cash_flow_statement, start_year = get_latest_financial_statements(ticker = ticker, historic_years_number = historic_years_number)
 
-    name_of_file_inter: str = f"intermediateDCF/DCF_{ticker}_{start_year}.xlsx"
-    name_file_final:str = f"DCFs_folder/DCF_{ticker}_{start_year}.xls"
+    name_of_file_inter: str = f"code/intermediateDCF/DCF_{ticker}_{start_year}.xlsx"
+    name_file_final:str = f"code/DCFs_folder/DCF_{ticker}_{start_year}.xls"
 
 
     yf_query_handler = Yfinance_Query_Handler()
@@ -218,7 +212,7 @@ def prepare_and_save_excel()->None:
 
     competitor_info: pd.DataFrame = get_competitor_info(ticker = ticker)
 
-    with open_excel(path = "DCF_template.xltm", mode = "w") as doc:
+    with open_excel(path = "code/DCF_template.xltm", mode = "w") as doc:
 
         # Reset the path to match the output file
         doc.path = name_of_file_inter
@@ -244,13 +238,21 @@ def prepare_and_save_excel()->None:
         if competitor_info is not None:
             doc.set_cells_pandas(start_cell="B23", df = competitor_info, sheet_name = "Comparable multiples", index = False)
 
-        doc.save(path = name_of_file_inter)
-
         doc.save(path = name_file_final)
 
 
 def main()-> None:
-    prepare_and_save_excel()
+    # Get the important information
+    ticker:                str = str(input("Please select a ticker (Currently only NA supported): ")).upper()
+    historic_years_number: int = int(input("Please select the number of historic years to consider: "))
+    forecast_years_number: int = int(input("Please select the number of years to consider for the forecast: "))
+
+    # Run the program
+    prepare_and_save_excel(
+        ticker=ticker,
+        historic_years_number=historic_years_number,
+        forecast_years_number=forecast_years_number
+    )
 
 if __name__ == "__main__":
     main()

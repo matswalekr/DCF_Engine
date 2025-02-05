@@ -7,7 +7,8 @@ import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv(dotenv_path="keys.env")
+dotenv_path = os.path.join(os.path.dirname(__file__), "../../keys.env")
+load_dotenv(dotenv_path=dotenv_path)
 
 class FMPSDK_Query_Handler():
     """
@@ -18,7 +19,7 @@ class FMPSDK_Query_Handler():
     
     def __init__(self)-> None:
         # get the API_KEYS from the .env file
-        self.API_Keys = os.getenv("API_KEYS", "").split(",") 
+        self.API_Keys = os.getenv("FMPSDK_API_KEYS").split(",") 
         if not self.API_Keys or self.API_Keys == [""]:
             raise ValueError("No API keys found in environment variables")
         

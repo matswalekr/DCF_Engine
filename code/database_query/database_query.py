@@ -8,7 +8,7 @@ class Generalised_Database_Query_Handler():
         self.conn = sqlite3.connect(db)
         self.cursor = self.conn.cursor()
 
-    def query(self, query:str)->pd.DataBase:
+    def query(self, query:str)->pd.DataFrame:
         """Handles a query in SQL on the databse"""
 
         self.cursor.execute(_sql = query)
