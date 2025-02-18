@@ -13,14 +13,15 @@ import pandas as pd
 import warnings
 
 
-def get_latest_second_latest(statement: pd.DataFrame, column: str)->Tuple[pd.DataFrame, pd.DataFrame]:
+def get_latest_second_latest(statement: pd.DataFrame, column: str,)->Tuple[pd.DataFrame, pd.DataFrame]:
     """Returns a tuple of (latest_value, second_latest_value)"""
     sorted_statement = statement.sort_index(level="year", ascending=False).loc[column]
     latest_value = sorted_statement.groupby("ticker").first()
     second_latest_value = sorted_statement.groupby("ticker").nth(1).droplevel("year")
     return (latest_value, second_latest_value)
 
-def get_competitor_info(ticker: str)-> pd.DataFrame:
+
+def get_competitor_info(ticker: str, current_year: int)-> pd.DataFrame:
     
     """
     Gets the info of competitors for the comparison of multiples"""
@@ -30,7 +31,7 @@ def get_competitor_info(ticker: str)-> pd.DataFrame:
     wrds_query_handler = WRDS_Query_Handler()
     database_query_handler = Database_Query_Handler()
 
-    #competitors = fmpsdk_query_handler.competitors(ticker = ticker, lower_multiple=0)
+   #competitors = fmp∫sdk_query_handler.competitors(ticker = ticker, lower_multiple=0)
     competitors = ["GOOGL", "DELL", "MSFT", "NFLX"]
 
     if len(competitors) == 0:
@@ -39,8 +40,10 @@ def get_competitor_info(ticker: str)-> pd.DataFrame:
 
     if database_query_handler.get_ratios(tickers = competitors) is None:
 
-        balance_sheets: pd.DataFrame = wrds_query_handler.balance_sheet(tickers = competitors, years = [2024, 2023,2022])
-        income_statements: pd.DataFrame = wrds_query_handler.income_statement(tickers = competitors, years = [2024, 2023,2022])
+        years: List[int] = [current_year, current_year-1, current_year-2]
+
+        balance_sheets: pd.DataFrame = wrds_query_handler.balance_sheet(tickers = competitors, years = years)
+        income_statements: pd.DataFrame = wrds_query_handler.income_statement(tickers = competitors, years = years)
 
         today = datetime.now()
         latest_share_prices = yfinance_query_handler.ticker_prices_daily(tickers = competitors, 
@@ -54,7 +57,7 @@ def get_competitor_info(ticker: str)-> pd.DataFrame:
         df = pd.DataFrame(index = competitors)
 
         # Add the data for the latest share prices
-        df["Share Price"] = latest_share_prices
+        df["Share Price"]        = latest_share_prices
         df["Shares outstanding"] = shares_outstanding
 
         # Market value of equities
@@ -82,15 +85,15 @@ def get_competitor_info(ticker: str)-> pd.DataFrame:
         df["EBITDA FY-1"] = second_latest_ebitda
 
         # Calculate and assign the enterprise value
-        df ["Enterprise FY0"] = df["Equity Value"] + latest_total_debt - latest_cash
+        df ["Enterprise FY0"]  = df["Equity Value"] + latest_total_debt - latest_cash
         df ["Enterprise FY-1"] = df["Equity Value"] + second_latest_total_debt - second_latest_cash
 
         # Calculate and assign the EV/revenues
-        df["EV/Revenues FY0"] = df["Enterprise FY0"] / df["Revenues FY0"]
+        df["EV/Revenues FY0"]  = df["Enterprise FY0"] / df["Revenues FY0"]
         df["EV/Revenues FY-1"] = df["Enterprise FY-1"] / df["Revenues FY-1"]
 
         # Calculate and assign the EV/EBITDA
-        df["EV/EBITDA FY0"] = df["Enterprise FY0"] / df["EBITDA FY0"]
+        df["EV/EBITDA FY0"]  = df["Enterprise FY0"] / df["EBITDA FY0"]
         df["EV/EBITDA FY-1"] = df["Enterprise FY-1"] / df["EBITDA FY-1"]
 
         df["Long name"] = [yfinance_query_handler.company_name(ticker = ticker) for ticker in df.index]
@@ -185,7 +188,7 @@ def check_years(historic_years_number: int, forecast_years_number: int)-> Tuple[
     return (historic_years_number, forecast_years_number)
 
 
-def prepare_and_save_excel(ticker: str, historic_years_number:int,forecast_years_number: int)->None:
+def prepare_and_save_excel(ticker: str, historic_years_number: int,forecast_years_number: int)->None:
 
     # Check if the years match the requirements of the excel template
     historic_years_number, forecast_years_number = check_years(historic_years_number = historic_years_number, forecast_years_number = forecast_years_number)
@@ -193,42 +196,43 @@ def prepare_and_save_excel(ticker: str, historic_years_number:int,forecast_years
     balance_sheet, income_statement, cash_flow_statement, start_year = get_latest_financial_statements(ticker = ticker, historic_years_number = historic_years_number)
 
     name_of_file_inter: str = f"code/intermediateDCF/DCF_{ticker}_{start_year}.xlsx"
-    name_file_final:str = f"code/DCFs_folder/DCF_{ticker}_{start_year}.xls"
+    name_file_final: str    = f"code/DCFs_folder/DCF_{ticker}_{start_year}.xls"
 
 
     yf_query_handler = Yfinance_Query_Handler()
 
-    beta_equity: float = yf_query_handler.beta_quity(ticker=ticker, time_frame_years=historic_years_number)
+    beta_equity: float      = yf_query_handler.beta_quity(ticker=ticker, time_frame_years=historic_years_number)
     risk_free_return: float = yf_query_handler.risk_free_rate()
-    market_return: float = yf_query_handler.snp500_return(time_frame_years=historic_years_number)
-    industry:str = yf_query_handler.industry(ticker = ticker)
-    max_price, min_price = yf_query_handler.high_low_52_weeks(ticker=ticker)
-    name:str = yf_query_handler.company_name(ticker = ticker)
+    market_return: float    = yf_query_handler.snp500_return(time_frame_years = historic_years_number)
+    industry: str           = yf_query_handler.industry(ticker = ticker)
+    max_price, min_price    = yf_query_handler.high_low_52_weeks(ticker=ticker)
+    name: str               = yf_query_handler.company_name(ticker = ticker)
 
 
     fmpsdk_query_handler = FMPSDK_Query_Handler()
 
     shares_outstanding: int = fmpsdk_query_handler.number_shares(ticker = ticker)
 
-    competitor_info: pd.DataFrame = get_competitor_info(ticker = ticker)
 
-    with open_excel(path = "code/DCF_template.xltm", mode = "w") as doc:
+    competitor_info: pd.DataFrame = get_competitor_info(ticker = ticker, current_year = datetime.now().year)
+
+    with open_excel(path = "../resources/DCF_template.xltm", mode = "w") as doc:
 
         # Reset the path to match the output file
         doc.path = name_of_file_inter
 
-        doc["Ticker"] = ticker
-        doc["Forecasted_Years"] = historic_years_number
-        doc["Start_Year"] = start_year
-        doc["Years_Forecasted"] = forecast_years_number
-        doc["Beta_Equity"] = beta_equity
-        doc["Riskfree_Return"] = risk_free_return
-        doc["Market_Return"] = market_return
-        doc["Industry"] = industry
+        doc["Ticker"]             = ticker
+        doc["Forecasted_Years"]   = historic_years_number
+        doc["Start_Year"]         = start_year
+        doc["Years_Forecasted"]   = forecast_years_number
+        doc["Beta_Equity"]        = beta_equity
+        doc["Riskfree_Return"]    = risk_free_return
+        doc["Market_Return"]      = market_return
+        doc["Industry"]           = industry
         doc["Shares_Outstanding"] = shares_outstanding
-        doc["High_Share_Price"] = max_price
-        doc["Low_Share_Price"] = min_price
-        doc["Name"] = name
+        doc["High_Share_Price"]   = max_price
+        doc["Low_Share_Price"]    = min_price
+        doc["Name"]               = name
 
 
         doc.set_cells_pandas(start_cell = "C5", df = balance_sheet, sheet_name = "Balance Sheet Historic", index = False)
@@ -249,9 +253,9 @@ def main()-> None:
 
     # Run the program
     prepare_and_save_excel(
-        ticker=ticker,
-        historic_years_number=historic_years_number,
-        forecast_years_number=forecast_years_number
+        ticker = ticker,
+        historic_years_number = historic_years_number,
+        forecast_years_number = forecast_years_number
     )
 
 if __name__ == "__main__":
