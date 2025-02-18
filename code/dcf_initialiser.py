@@ -195,8 +195,8 @@ def prepare_and_save_excel(ticker: str, historic_years_number: int,forecast_year
 
     balance_sheet, income_statement, cash_flow_statement, start_year = get_latest_financial_statements(ticker = ticker, historic_years_number = historic_years_number)
 
-    name_of_file_inter: str = f"code/intermediateDCF/DCF_{ticker}_{start_year}.xlsx"
-    name_file_final: str    = f"code/DCFs_folder/DCF_{ticker}_{start_year}.xls"
+    name_of_file_inter: str = f"../DCFs_folder/intermediateDCF/DCF_{ticker}_{start_year}.xlsx"
+    name_file_final: str    = f"../DCFs_folder/DCF_{ticker}_{start_year}.xls"
 
 
     yf_query_handler = Yfinance_Query_Handler()

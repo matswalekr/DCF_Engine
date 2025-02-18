@@ -52,10 +52,10 @@ async def task_wrapper(function: Callable, *args):
 class WRDS_Query_Handler():
 
     def __init__(self)->None:
-        self.username: str = os.getenv("wrds_username", "")
+        self.username: str = str(os.getenv("wrds_username", ""))
         if not self.username:
             raise ValueError("No username found in environment variables")
-        self.db = wrds.Connection(wrds_username = self.username)
+        self.db = wrds.Connection(wrds_username = self.username,autoconnect=True)
         pd.set_option('future.no_silent_downcasting', True)
 
     def __del__(self)-> None:
