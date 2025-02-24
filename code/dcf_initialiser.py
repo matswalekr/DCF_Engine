@@ -43,8 +43,10 @@ def get_competitor_info(ticker: str)-> pd.DataFrame:
 
     if database_query_handler.get_ratios(tickers = competitors) is None:
 
+        # Get the latest year found of the main ticker
         global historic_years
         latest_year: int = historic_years[0]
+
         years: List[int] = [latest_year, latest_year-1, latest_year-2]
 
         balance_sheets: pd.DataFrame = wrds_query_handler.balance_sheet(tickers = competitors, years = years)
