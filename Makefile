@@ -18,3 +18,7 @@ test_%:
 		echo "No matching test file found for '$*'"; \
 		exit 1; \
 	fi
+
+yfinance_query:
+	@echo "Running yfinance library"
+	@$(PYTHON_VERSION) code/yfinance_query/yfinance_query.py

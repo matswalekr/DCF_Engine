@@ -123,8 +123,8 @@ class Yfinance_Query_Handler():
             raise ValueError(f"No data found for the S&P500 between the dates {end} - {start}")
         
         # calculate the returns (change in price)
-        stock_returns = stock_data["Adj Close"].pct_change().dropna()
-        market_returns = market_data["Adj Close"].pct_change().dropna()
+        stock_returns = stock_data["Close"].pct_change().dropna()
+        market_returns = market_data["Close"].pct_change().dropna()
 
         # Align the data to make sure no data mismatches
         aligned_data = pd.concat([stock_returns, market_returns], axis=1, join="inner")
@@ -159,7 +159,7 @@ class Yfinance_Query_Handler():
         end = end.strftime("%Y-%m-%d")
         start = start.strftime("%Y-%m-%d")
 
-        prices_snp500 = self.sp500_prices_daily(start=start, end = end)["Adj Close"]
+        prices_snp500 = self.sp500_prices_daily(start=start, end = end)["Close"]
     
         if prices_snp500.empty:
             raise ValueError(f"No data found for the dates {start} - {end}")
