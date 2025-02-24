@@ -34,7 +34,7 @@ def get_competitor_info(ticker: str)-> pd.DataFrame:
     database_query_handler = Database_Query_Handler()
 
    #competitors = fmp∫sdk_query_handler.competitors(ticker = ticker, lower_multiple=0)
-    competitors = ["GOOGL", "DELL", "MSFT", "NFLX"]
+    competitors = ["PYPL","ADYEN.ES","AFRM","SOFI"]
 
     if len(competitors) == 0:
         warnings.warn(f"No competitors of {ticker} found", UserWarning)
