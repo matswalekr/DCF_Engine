@@ -12,6 +12,8 @@ from typing import List, Tuple
 import pandas as pd
 import warnings
 
+# Global definition of the historic years that is visible to all functions
+historic_years = []
 
 def get_latest_second_latest(statement: pd.DataFrame, column: str,)->Tuple[pd.DataFrame, pd.DataFrame]:
     """Returns a tuple of (latest_value, second_latest_value)"""
@@ -21,7 +23,7 @@ def get_latest_second_latest(statement: pd.DataFrame, column: str,)->Tuple[pd.Da
     return (latest_value, second_latest_value)
 
 
-def get_competitor_info(ticker: str, current_year: int)-> pd.DataFrame:
+def get_competitor_info(ticker: str, latest_year: int)-> pd.DataFrame:
     
     """
     Gets the info of competitors for the comparison of multiples"""
@@ -40,14 +42,15 @@ def get_competitor_info(ticker: str, current_year: int)-> pd.DataFrame:
 
     if database_query_handler.get_ratios(tickers = competitors) is None:
 
-        years: List[int] = [current_year, current_year-1, current_year-2]
+        years: List[int] = [latest_year, latest_year-1, latest_year-2]
 
         balance_sheets: pd.DataFrame = wrds_query_handler.balance_sheet(tickers = competitors, years = years)
         income_statements: pd.DataFrame = wrds_query_handler.income_statement(tickers = competitors, years = years)
 
         today = datetime.now()
+
         latest_share_prices = yfinance_query_handler.ticker_prices_daily(tickers = competitors, 
-                                                                         end = datetime.now(),
+                                                                         end = today,
                                                                          start = today - relativedelta(days = 3))["Close"].iloc[0]
         
         shares_outstanding: pd.DataFrame = yfinance_query_handler.number_shares_outstanding(tickers = competitors)
@@ -138,6 +141,7 @@ def get_latest_financial_statements(historic_years_number: int, ticker: str)->Tu
 
         return (balance_sheet, income_statement, cashflow_statement)
     
+    global historic_years
     historic_years: List[int] = get_list_years(historic_years_number)
 
     try:
@@ -214,7 +218,7 @@ def prepare_and_save_excel(ticker: str, historic_years_number: int,forecast_year
     shares_outstanding: int = fmpsdk_query_handler.number_shares(ticker = ticker)
 
 
-    competitor_info: pd.DataFrame = get_competitor_info(ticker = ticker, current_year = datetime.now().year)
+    competitor_info: pd.DataFrame = get_competitor_info(ticker = ticker, latest_year = 2024)
 
     with open_excel(path = "../resources/DCF_template.xltm", mode = "w") as doc:
 

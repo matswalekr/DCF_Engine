@@ -374,4 +374,4 @@ class Test_enter_excel(unittest.TestCase):
         self.assertTrue(isinstance(test_excel, Excel_write))
 
 
-# To run use:  PYTHONPATH=/Users/matswalker/DCF/Excel_Engine pytest tests/test_excel_engine.py
+# To run use:  PYTHONPATH=/Users/matswalker/DCF/code/Excel_Engine pytest tests/test_excel_engine.py
