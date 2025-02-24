@@ -22,7 +22,6 @@ def get_latest_second_latest(statement: pd.DataFrame, column: str,)->Tuple[pd.Da
     second_latest_value = sorted_statement.groupby("ticker").nth(1).droplevel("year")
     return (latest_value, second_latest_value)
 
-
 def get_competitor_info(ticker: str)-> pd.DataFrame:
     
     """
@@ -147,7 +146,7 @@ def get_latest_financial_statements(historic_years_number: int, ticker: str)->Tu
         return (balance_sheet, income_statement, cashflow_statement)
     
     global historic_years
-    historic_years: List[int] = get_list_years(historic_years_number)
+    historic_years = get_list_years(historic_years_number)
 
     try:
         balance_sheet, income_statement, cash_flow_statement = get_financial_statements(ticker = ticker, years = historic_years)

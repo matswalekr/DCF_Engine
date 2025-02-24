@@ -82,7 +82,7 @@ class Yfinance_Query_Handler():
         # Define the S&P 500 ticker
         # Download daily prices
         assert (ticker or tickers), "No tickers were given"
-
+        assert (not (ticker and tickers)), "Can't give ticker and tickers to ticker_prices_daily"
         if isinstance(start, date):
             start = start.strftime("%Y-%m-%d")
 
@@ -96,13 +96,14 @@ class Yfinance_Query_Handler():
 
         return stock_data
 
+
     def beta_quity(self, ticker: str, time_frame_years: int)-> float:
 
         if time_frame_years <= 0:
             raise ValueError(f"The years to calculate must be positive, not {time_frame_years}")
         
-        # End = Today, start = X years before today
-        end = datetime.now()
+        # End = Yesterday, start = X years before yesterday
+        end = datetime.now() - relativedelta(days=-1)
         start = end - relativedelta(years=time_frame_years)
 
         # Convert to strings in right formal
@@ -111,14 +112,15 @@ class Yfinance_Query_Handler():
 
         # get the stock data
         stock_data = self.ticker_prices_daily(ticker = ticker, start = start, end = end)
+        print(stock_data)
 
         if stock_data.empty:
-            raise ValueError(f"No data found for the stock {ticker} between the dates {start} - {end}")
+            raise ValueError(f"No data found for the stock {ticker} between the dates {end} - {start}")
         
         market_data = self.sp500_prices_daily(start = start, end = end)
 
         if market_data.empty:
-            raise ValueError(f"No data found for the S&P500 between the dates {start} - {end}")
+            raise ValueError(f"No data found for the S&P500 between the dates {end} - {start}")
         
         # calculate the returns (change in price)
         stock_returns = stock_data["Adj Close"].pct_change().dropna()
