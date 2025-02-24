@@ -34,7 +34,7 @@ def get_competitor_info(ticker: str)-> pd.DataFrame:
     database_query_handler = Database_Query_Handler()
 
    #competitors = fmp∫sdk_query_handler.competitors(ticker = ticker, lower_multiple=0)
-    competitors = ["PYPL","ADYEN.ES","AFRM","SOFI"]
+    competitors = ["TSLA"]
 
     if len(competitors) == 0:
         warnings.warn(f"No competitors of {ticker} found", UserWarning)
@@ -155,12 +155,15 @@ def get_latest_financial_statements(historic_years_number: int, ticker: str)->Tu
     except Exception as _:
         # Exception raised if not yet released financial statements
         # Fall back to last year
-        # If the error is persistent, then there is a problem with the query
+        # If the error is persistent, then there is a problem with the query. In this case None is returned
         historic_years = get_list_years(historic_years_number + 1)[1::]
-
-        balance_sheet, income_statement, cash_flow_statement = get_financial_statements(ticker = ticker, years = historic_years)
-        warnings.warn(f"\nThe financial statements for {ticker} in year {datetime.now().year} are not available. Fall back on year {historic_years[0]}.\nThe financial statements might not yet be released.\n", 
+        try:
+            balance_sheet, income_statement, cash_flow_statement = get_financial_statements(ticker = ticker, years = historic_years)
+            warnings.warn(f"\nThe financial statements for {ticker} in year {datetime.now().year} are not available. Fall back on year {historic_years[0]}.\nThe financial statements might not yet be released.\n", 
                       UserWarning)
+        except Exception as _:
+            print(f"No financial Data could be found for company {ticker}")
+            return (None, None, None, -1)
 
 
     return (balance_sheet, income_statement, cash_flow_statement, historic_years[0])
@@ -202,6 +205,10 @@ def prepare_and_save_excel(ticker: str, historic_years_number: int,forecast_year
     historic_years_number, forecast_years_number = check_years(historic_years_number = historic_years_number, forecast_years_number = forecast_years_number)
 
     balance_sheet, income_statement, cash_flow_statement, start_year = get_latest_financial_statements(ticker = ticker, historic_years_number = historic_years_number)
+
+    # Check if this worked
+    if balance_sheet is None:
+        raise RuntimeError("No financial Statements found.")
 
     name_of_file_inter: str = f"DCFs_folder/intermediateDCF/DCF_{ticker}_{start_year}.xlsx"
     name_file_final: str    = f"DCFs_folder/DCF_{ticker}_{start_year}.xls"
