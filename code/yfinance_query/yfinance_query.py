@@ -112,7 +112,6 @@ class Yfinance_Query_Handler():
 
         # get the stock data
         stock_data = self.ticker_prices_daily(ticker = ticker, start = start, end = end)
-        print(stock_data)
 
         if stock_data.empty:
             raise ValueError(f"No data found for the stock {ticker} between the dates {end} - {start}")
