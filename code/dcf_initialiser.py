@@ -13,7 +13,7 @@ import pandas as pd
 import warnings
 
 # Global definition of the historic years that is visible to all functions
-historic_years = []
+historic_years: List[int] = []
 
 def get_latest_second_latest(statement: pd.DataFrame, column: str,)->Tuple[pd.DataFrame, pd.DataFrame]:
     """Returns a tuple of (latest_value, second_latest_value)"""
@@ -23,10 +23,11 @@ def get_latest_second_latest(statement: pd.DataFrame, column: str,)->Tuple[pd.Da
     return (latest_value, second_latest_value)
 
 
-def get_competitor_info(ticker: str, latest_year: int)-> pd.DataFrame:
+def get_competitor_info(ticker: str)-> pd.DataFrame:
     
     """
-    Gets the info of competitors for the comparison of multiples"""
+    Gets the info of competitors for the comparison of multiples.
+    Gets the latest year according to the latest year found of the main stock."""
 
     fmpsdk_query_handler = FMPSDK_Query_Handler()
     yfinance_query_handler = Yfinance_Query_Handler()
@@ -42,6 +43,8 @@ def get_competitor_info(ticker: str, latest_year: int)-> pd.DataFrame:
 
     if database_query_handler.get_ratios(tickers = competitors) is None:
 
+        global historic_years
+        latest_year: int = historic_years[0]
         years: List[int] = [latest_year, latest_year-1, latest_year-2]
 
         balance_sheets: pd.DataFrame = wrds_query_handler.balance_sheet(tickers = competitors, years = years)
@@ -218,7 +221,7 @@ def prepare_and_save_excel(ticker: str, historic_years_number: int,forecast_year
     shares_outstanding: int = fmpsdk_query_handler.number_shares(ticker = ticker)
 
 
-    competitor_info: pd.DataFrame = get_competitor_info(ticker = ticker, latest_year = 2024)
+    competitor_info: pd.DataFrame = get_competitor_info(ticker = ticker)
 
     with open_excel(path = "../resources/DCF_template.xltm", mode = "w") as doc:
 
