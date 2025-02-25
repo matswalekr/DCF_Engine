@@ -286,13 +286,16 @@ def prepare_and_save_excel(ticker: str, historic_years_number: int,forecast_year
             doc.set_cells_pandas(start_cell="B23", df = competitor_info, sheet_name = "Comparable multiples", index = False)
 
         doc.save(path = name_file_final)
+        print(f"\nFind the Excel containing the DCF under {name_file_final}.\n")
 
 
 def main()-> None:
     # Get the important information
+    print("\n")
     ticker:                str = str(input("Please select a ticker (Currently only NA supported): ")).upper()
     historic_years_number: int = int(input("Please select the number of historic years to consider: "))
     forecast_years_number: int = int(input("Please select the number of years to consider for the forecast: "))
+    print("\n")
 
     # Run the program
     prepare_and_save_excel(
