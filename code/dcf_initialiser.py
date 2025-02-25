@@ -8,7 +8,7 @@ from gpt_query import LLM_Query_Handler
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 import pandas as pd
 import warnings
 
@@ -17,16 +17,24 @@ historic_years: List[int] = []
 
 def get_latest_second_latest(statement: pd.DataFrame, column: str,)->Tuple[pd.DataFrame, pd.DataFrame]:
     """Returns a tuple of (latest_value, second_latest_value)"""
+
+    assert(isinstance(statement, pd.DataFrame)), f"The statement given to get_latest_second_latest was not of type pd.DataFrame, but of {type(statement)}.\n"
+    assert(isinstance(column, str)), f"The column given to get_latest_second_latest was not of type str, but of {type(column)}.\n"
+
     sorted_statement = statement.sort_index(level="year", ascending=False).loc[column]
     latest_value = sorted_statement.groupby("ticker").first()
     second_latest_value = sorted_statement.groupby("ticker").nth(1).droplevel("year")
     return (latest_value, second_latest_value)
 
-def get_competitor_info(ticker: str)-> pd.DataFrame:
+def get_competitor_info(ticker: str)-> Optional[pd.DataFrame]:
     
     """
     Gets the info of competitors for the comparison of multiples.
-    Gets the latest year according to the latest year found of the main stock."""
+    Gets the latest year according to the latest year found of the main stock.
+    Returns None if no competitor info was found.
+    """
+
+    assert(isinstance(ticker, str)), f"The ticker given to the function get_competitor_info was not of type str, but of type {type(ticker)}.\n"
 
     fmpsdk_query_handler = FMPSDK_Query_Handler()
     yfinance_query_handler = Yfinance_Query_Handler()
@@ -113,6 +121,10 @@ def get_competitor_info(ticker: str)-> pd.DataFrame:
         return df_formated
 
 def get_list_years(number_years: int)-> List[int]:
+    """
+    Returns a list of the number_years last years."""
+
+    assert(isinstance(number_years, (int, float))), f"The number_years provided to get_list_years was not numeric, but of type {type(number_years)}.\n"
 
     current_year =  int(datetime.now().year)
     historic_years = [current_year - i for i in range(number_years)]
@@ -120,6 +132,12 @@ def get_list_years(number_years: int)-> List[int]:
     return historic_years
 
 def seed_years(doc:Excel_write, start_year: int, number_years:int)->None:
+    """Writes the first years into the Excel document"""
+
+    assert(isinstance(doc, Excel_write)),   f"The doc given to seed_years is not of type Excel_write, but of type {type(doc)}.\n"
+    assert(isinstance(start_year, int)),    f"The start_year given to seed_years is not of type int, but of type {type(start_year)}.\n"
+    assert(isinstance(number_years, int)),  f"The number_years given to seed_years is not of type int, but of type {type(number_years)}.\n"
+
     start_cell = "C2"
     sheet_name = "Income Statement Forecast"
     
@@ -131,6 +149,8 @@ def get_latest_financial_statements(historic_years_number: int, ticker: str)->Tu
     """
     Returns: (balance_sheet, income_statement, cashflow_statement, first_year)
     """
+    assert(isinstance(historic_years_number, int)), f"The historic_years_number provided to get_latest_financial_statements is not of type int, but of type {type(historic_years_number)}.\n"
+    assert(isinstance(ticker, str)),                f"The ticker provided to get_latest_financial_statements is not of type str, but of type {type(ticker)}.\n"
 
     def get_financial_statements(ticker:str, years: List[int])->Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """
@@ -172,6 +192,10 @@ def check_years(historic_years_number: int, forecast_years_number: int)-> Tuple[
     """Checks if the years used match the constraint of the Excel sheet.\n
     If they dont match, it warns the user and uses the respective minimum or maximum years\n
     Returns a tuple of (historic_years_number, forecast_years_number)"""
+
+    assert(isinstance(historic_years_number, (int, float))), f"The historic_years_number give to check_years is not numeric, but of type {type(historic_years_number)}.\n"
+    assert(isinstance(forecast_years_number, (int, float))), f"The forecast_years_number give to check_years is not numeric, but of type {type(forecast_years_number)}.\n"
+
     # Constraint from Excel template on how many years can be forecasted
     MAX_YEARS_FORECASTABLE: int = 10
     MAX_YEARS_HISTORIC: int = 10
@@ -200,15 +224,18 @@ def check_years(historic_years_number: int, forecast_years_number: int)-> Tuple[
 
 
 def prepare_and_save_excel(ticker: str, historic_years_number: int,forecast_years_number: int)->None:
+    """
+    Writes the DCF into the Excel document."""
 
+    assert(isinstance(ticker, str)), "The ticker given to prepare_save_excel is not of type str, but of type"
     # Check if the years match the requirements of the excel template
     historic_years_number, forecast_years_number = check_years(historic_years_number = historic_years_number, forecast_years_number = forecast_years_number)
 
     balance_sheet, income_statement, cash_flow_statement, start_year = get_latest_financial_statements(ticker = ticker, historic_years_number = historic_years_number)
 
-    # Check if this worked
+    # Case when this failed
     if balance_sheet is None:
-        raise RuntimeError("No financial Statements found.")
+        raise RuntimeError(f"No financial Statements for {ticker} found. DCF aborted.\n")
 
     name_of_file_inter: str = f"DCFs_folder/intermediateDCF/DCF_{ticker}_{start_year}.xlsx"
     name_file_final: str    = f"DCFs_folder/DCF_{ticker}_{start_year}.xls"
@@ -229,7 +256,7 @@ def prepare_and_save_excel(ticker: str, historic_years_number: int,forecast_year
     shares_outstanding: int = fmpsdk_query_handler.number_shares(ticker = ticker)
 
 
-    competitor_info: pd.DataFrame = get_competitor_info(ticker = ticker)
+    competitor_info: Optional[pd.DataFrame] = get_competitor_info(ticker = ticker)
 
     with open_excel(path = "resources/DCF_template.xltm", mode = "w") as doc:
 
@@ -254,6 +281,7 @@ def prepare_and_save_excel(ticker: str, historic_years_number: int,forecast_year
         doc.set_cells_pandas(start_cell="C5", df = income_statement, sheet_name = "Income Statement Historic", index = False)
         doc.set_cells_pandas(start_cell="C5", df = cash_flow_statement, sheet_name = "Cash flow statement Historic", index = False)
 
+        # Case when competitor information was found
         if competitor_info is not None:
             doc.set_cells_pandas(start_cell="B23", df = competitor_info, sheet_name = "Comparable multiples", index = False)
 
