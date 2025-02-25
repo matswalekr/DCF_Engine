@@ -227,7 +227,10 @@ def prepare_and_save_excel(ticker: str, historic_years_number: int,forecast_year
     """
     Writes the DCF into the Excel document."""
 
-    assert(isinstance(ticker, str)), "The ticker given to prepare_save_excel is not of type str, but of type"
+    assert(isinstance(ticker, str)),                f"The ticker given to prepare_save_excel is not of type str, but of type {type(ticker)}.\n"
+    assert(isinstance(historic_years_number, int)), f"The historic_years_number given to prepare_save_excel is not of type int, but of type {type(historic_years_number)}.\n"
+    assert(isinstance(forecast_years_number, int)), f"The forecast_years_number given to prepare_save_excel is not of type int, but of type {type(forecast_years_number)}.\n"
+    
     # Check if the years match the requirements of the excel template
     historic_years_number, forecast_years_number = check_years(historic_years_number = historic_years_number, forecast_years_number = forecast_years_number)
 
@@ -286,7 +289,8 @@ def prepare_and_save_excel(ticker: str, historic_years_number: int,forecast_year
             doc.set_cells_pandas(start_cell="B23", df = competitor_info, sheet_name = "Comparable multiples", index = False)
 
         doc.save(path = name_file_final)
-        print(f"\nFind the Excel containing the DCF under {name_file_final}.\n")
+
+    print(f"\nFind the Excel containing the DCF under {name_file_final}.\n")
 
 
 def main()-> None:
