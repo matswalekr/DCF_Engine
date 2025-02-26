@@ -41,8 +41,8 @@ def get_competitor_info(ticker: str)-> Optional[pd.DataFrame]:
     wrds_query_handler = WRDS_Query_Handler()
     database_query_handler = Database_Query_Handler()
 
-   #competitors = fmpsdk_query_handler.competitors(ticker = ticker, lower_multiple=0)
-    competitors = ["XYZ","AAPL","V","MA","AXP"]
+    competitors = fmpsdk_query_handler.competitors(ticker = ticker, lower_multiple=0)
+    #competitors = ["XYZ","AAPL","V","MA","AXP"]
 
     if len(competitors) == 0:
         warnings.warn(f"No competitors of {ticker} found", UserWarning)
