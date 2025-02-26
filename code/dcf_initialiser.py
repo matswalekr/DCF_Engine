@@ -3,7 +3,7 @@ from yfinance_query import Yfinance_Query_Handler
 from wrds_query import WRDS_Query_Handler
 from database_query import Database_Query_Handler
 from Excel_Engine import open_excel, Excel_write
-from gpt_query import LLM_Query_Handler
+#from gpt_query import LLM_Query_Handler
 
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -36,12 +36,12 @@ def get_competitor_info(ticker: str)-> Optional[pd.DataFrame]:
 
     assert(isinstance(ticker, str)), f"The ticker given to the function get_competitor_info was not of type str, but of type {type(ticker)}.\n"
 
-    fmpsdk_query_handler = FMPSDK_Query_Handler()
+    fmpsdk_query_handler   = FMPSDK_Query_Handler()
     yfinance_query_handler = Yfinance_Query_Handler()
-    wrds_query_handler = WRDS_Query_Handler()
+    wrds_query_handler     = WRDS_Query_Handler()
     database_query_handler = Database_Query_Handler()
 
-    competitors = fmpsdk_query_handler.competitors(ticker = ticker, lower_multiple=0)
+    competitors: List[str] = fmpsdk_query_handler.competitors(ticker = ticker, lower_multiple=0)
     #competitors = ["XYZ","AAPL","V","MA","AXP"]
 
     if len(competitors) == 0:
