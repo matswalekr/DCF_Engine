@@ -61,11 +61,11 @@ def get_competitor_info(ticker: str)-> Optional[pd.DataFrame]:
 
         today = datetime.now()
 
-        latest_share_prices = yfinance_query_handler.ticker_prices_daily(tickers = competitors, 
+        latest_share_prices: pd.DataFrame = yfinance_query_handler.ticker_prices_daily(tickers = competitors, 
                                                                          end = today,
                                                                          start = today - relativedelta(days = 3))["Close"].iloc[0]
         
-        shares_outstanding: pd.DataFrame = yfinance_query_handler.number_shares_outstanding(tickers = competitors)
+        shares_outstanding: pd.DataFrame  = yfinance_query_handler.number_shares_outstanding(tickers = competitors)
 
 
         # Create a new dataframe to hold the information
@@ -79,24 +79,22 @@ def get_competitor_info(ticker: str)-> Optional[pd.DataFrame]:
         df["Equity Value"] = df["Share Price"] * df["Shares outstanding"] / 1_000_000 # In million USD
 
         # Get the necessary information from wrds
-        latest_revenue, second_latest_revenues = get_latest_second_latest(income_statements, "revenues")
-        latest_cash, second_latest_cash = get_latest_second_latest(balance_sheets, "cashandequivalents")
-        latest_total_debt, second_latest_total_debt = [current_debt + non_current_debt 
-                                                       for current_debt, non_current_debt in
+        latest_revenue, second_latest_revenues      = get_latest_second_latest(income_statements, "revenues")
+        latest_cash, second_latest_cash             = get_latest_second_latest(balance_sheets, "cashandequivalents")
+        latest_total_debt, second_latest_total_debt = [current_debt + non_current_debt for current_debt, non_current_debt in
                                                         zip(get_latest_second_latest(balance_sheets, "currentdebt"),  
                                                               get_latest_second_latest(balance_sheets, "longtermdebt"))]
 
-        latest_ebitda, second_latest_ebitda = [ebit + dna 
-                                               for ebit, dna in
-                                               zip(get_latest_second_latest(income_statements, "ebit"),
-                                                   get_latest_second_latest(income_statements, "depreciationandamortisation"))]
+        latest_ebitda, second_latest_ebitda         = [ebit + dna for ebit, dna in
+                                                        zip(get_latest_second_latest(income_statements, "ebit"),
+                                                            get_latest_second_latest(income_statements, "depreciationandamortisation"))]
 
         # Assign the revenues
-        df["Revenues FY0"] = latest_revenue
+        df["Revenues FY0"]  = latest_revenue
         df["Revenues FY-1"] = second_latest_revenues
     
         # Assign the EBITDA
-        df["EBITDA FY0"] = latest_ebitda
+        df["EBITDA FY0"]  = latest_ebitda
         df["EBITDA FY-1"] = second_latest_ebitda
 
         # Calculate and assign the enterprise value
