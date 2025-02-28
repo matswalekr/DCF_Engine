@@ -42,7 +42,7 @@ def get_competitor_info(ticker: str)-> Optional[pd.DataFrame]:
     database_query_handler = Database_Query_Handler()
 
     # Often problems with fmpsdk. Manually inout tickers.
-    competitors: List[str] = fmpsdk_query_handler.competitors(ticker = ticker, lower_multiple=0.3)
+    competitors: List[str] = fmpsdk_query_handler.competitors(ticker = ticker, lower_multiple=0.1)
     #competitors = ["XYZ","AAPL","V","MA","AXP"]
 
     if len(competitors) == 0:
