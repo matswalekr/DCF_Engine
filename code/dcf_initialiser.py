@@ -15,6 +15,9 @@ import warnings
 # Global definition of the historic years that is visible to all functions
 historic_years: List[int] = []
 
+# Global definition of the competitors. Updated in the get_competitor_info
+
+
 def get_latest_second_latest(statement: pd.DataFrame, column: str,)->Tuple[pd.DataFrame, pd.DataFrame]:
     """Returns a tuple of (latest_value, second_latest_value)"""
 
@@ -33,6 +36,8 @@ def get_competitor_info(ticker: str)-> Optional[pd.DataFrame]:
     Gets the latest year according to the latest year found of the main stock.
     Returns None if no competitor info was found.
     """
+    # Use the global competitors
+    global competitors
 
     assert(isinstance(ticker, str)), f"The ticker given to the function get_competitor_info was not of type str, but of type {type(ticker)}.\n"
 
