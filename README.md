@@ -11,8 +11,8 @@ Note that the Excel file is mainly controlled through the "Assumptions" sheet. F
 For usage, run **make** in the command line. This will then ask for the **Ticker** of the company, the **number of historic years** (3-10 years) to be taken into account and the **years to forecast**(up to 10 years). 
 Note that only companies from the US can be considered. 
 
-To adjust the DCF, use the Assumptions and PPE & Depreciation page. By default, it is filled with the averages of the last years.
-Further, more fine grained adjustments can be done in the DCF page, but this is generally not recommendet and may lead to unexpected behavior.
+To adjust the DCF, use the Assumptions and PPE & Depreciation page. By default, these are filled with the averages of the last years.
+Further, more fine grained adjustments can be done in the DCF page, but this is generally not encouraged and may lead to unexpected behavior.
 
 The main **Competitors** of the company will be tried to fill programatically. If this fails, they will need to be inputted in the [dcf_initialiser](/code/dcf_initialiser.py) by hand.
 

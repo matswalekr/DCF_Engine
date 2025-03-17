@@ -59,7 +59,6 @@ def get_competitor_info(ticker: str)-> Optional[pd.DataFrame]:
     else:
         competitors = competitors_found
 
-
     if database_query_handler.get_ratios(tickers = competitors) is None:
 
         # Get the latest year found of the main ticker
