@@ -12,6 +12,10 @@ from typing import List, Tuple, Optional
 import pandas as pd
 import warnings
 
+# Customer Exception for when financial statements where not found
+class FinancialStatementsNotFoundError(Exception):
+    pass
+
 # Global definition of the historic years that is visible to all functions
 historic_years: List[int] = []
 
@@ -168,14 +172,25 @@ def get_latest_financial_statements(historic_years_number: int, ticker: str)->Tu
 
         wrds = WRDS_Query_Handler()
 
-        balance_sheet: pd.DataFrame = wrds.balance_sheet(ticker = ticker, years = years)
-        income_statement: pd.DataFrame = wrds.income_statement(ticker = ticker, years = years)
-        cashflow_statement: pd.DataFrame = wrds.cash_flow_statement(ticker = ticker, years = years)
+        # Catch warnings as errors
+        with warnings.catch_warnings() as w:
+            
+            warnings.simplefilter("always")  # Catch Warnings
 
-        return (balance_sheet, income_statement, cashflow_statement)
+            balance_sheet: pd.DataFrame = wrds.balance_sheet(ticker = ticker, years = years)
+            income_statement: pd.DataFrame = wrds.income_statement(ticker = ticker, years = years)
+            cashflow_statement: pd.DataFrame = wrds.cash_flow_statement(ticker = ticker, years = years)
+
+            if w:
+                for warning_ in w:
+                    print(warning_.message)
+                raise FinancialStatementsNotFoundError
+            else:
+                return (balance_sheet, income_statement, cashflow_statement)
     
     global historic_years
     historic_years = get_list_years(historic_years_number)
+    latest_year: int = historic_years[0]
 
     try:
         balance_sheet, income_statement, cash_flow_statement = get_financial_statements(ticker = ticker, years = historic_years)
@@ -186,16 +201,17 @@ def get_latest_financial_statements(historic_years_number: int, ticker: str)->Tu
         # Fall back to last year
         # If the error is persistent, then there is a problem with the query. In this case None is returned
         historic_years = get_list_years(historic_years_number + 1)[1::]
+        latest_year -= 1 # Decrement the latest year
         try:
             balance_sheet, income_statement, cash_flow_statement = get_financial_statements(ticker = ticker, years = historic_years)
-            warnings.warn(f"\nThe financial statements for {ticker} in year {datetime.now().year} are not available. Fall back on year {historic_years[0]}.\nThe financial statements might not yet be released.\n", 
+            warnings.warn(f"\nThe financial statements for {ticker} in year {datetime.now().year} are not available. Fall back on year {historic_years[0]}.\nThe financial statements might not yet be released.\n\n", 
                       UserWarning)
         except Exception as _:
             print(f"No financial Data could be found for company {ticker}")
             return (None, None, None, -1)
 
 
-    return (balance_sheet, income_statement, cash_flow_statement, historic_years[0])
+    return (balance_sheet, income_statement, cash_flow_statement, latest_year)
 
 def check_years(historic_years_number: int, forecast_years_number: int)-> Tuple[int, int]:
     """Checks if the years used match the constraint of the Excel sheet.\n
