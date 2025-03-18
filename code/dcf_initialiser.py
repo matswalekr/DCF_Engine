@@ -8,9 +8,10 @@ from Excel_Engine import open_excel, Excel_write
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Any, Union
 import pandas as pd
 import warnings
+import os
 
 # Customer Exception for when financial statements where not found
 class FinancialStatementsNotFoundError(Exception):
@@ -319,11 +320,15 @@ def prepare_and_save_excel(ticker: str, historic_years_number: int,forecast_year
 
 
 def main()-> None:
-    # Get the important information
+    def get_args(name: str, prompt: str, type)->Any:
+        info_from_command: str = os.getenv(name)
+        return type(info_from_command) if info_from_command is not None else type(input(prompt))
+
+    # Get the important information by prompting the user
     print("\n")
-    ticker:                str = str(input("Please select a ticker (Currently only NA supported): ")).upper()
-    historic_years_number: int = int(input("Please select the number of historic years to consider: "))
-    forecast_years_number: int = int(input("Please select the number of years to consider for the forecast: "))
+    ticker:                str = get_args("ticker","Please select a ticker (Currently only NA supported): ", str).upper()
+    historic_years_number: int = get_args("historic","Please select the number of historic years to consider: ", int)
+    forecast_years_number: int = get_args("forecast","Please select the number of years to consider for the forecast: ", int)
     print("\n")
 
     # Run the program
