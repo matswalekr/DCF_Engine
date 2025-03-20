@@ -21,7 +21,7 @@ class FinancialStatementsNotFoundError(Exception):
 historic_years: List[int] = []
 
 # Global definition of the competitors. Updated in the get_competitor_info
-competitors: List[str] = ["LMT", "GD", "RTX"]
+competitors: List[str] = []
 
 def get_latest_second_latest(statement: pd.DataFrame, column: str,)->Tuple[pd.DataFrame, pd.DataFrame]:
     """Returns a tuple of (latest_value, second_latest_value)"""
@@ -52,17 +52,18 @@ def get_competitor_info(ticker: str)-> Optional[pd.DataFrame]:
     database_query_handler = Database_Query_Handler()
 
     # Often problems with fmpsdk. Manually input tickers.
-    competitors_found: List[str] = fmpsdk_query_handler.competitors(ticker = ticker, lower_multiple=0.1)
+    if len(competitors) == 0:
+        competitors_found: List[str] = fmpsdk_query_handler.competitors(ticker = ticker, lower_multiple=0.1)
 
-    # Check for competitors programatically, if this works, update global competitors list.
-    # If this fails, fall back to the manually inputted competitors
-    # If this list is empty, return an error
-    if len(competitors_found) == 0:
-        if len(competitors) == 0:
-            warnings.warn(f"No competitors of {ticker} found.\nMight be problem with fmpsdk. Input tickers manually.", UserWarning)
-            return None
-    else:
-        competitors = competitors_found
+        # Check for competitors programatically, if this works, update global competitors list.
+        # If this fails, fall back to the manually inputted competitors
+        # If this list is empty, return an error
+        if len(competitors_found) == 0:
+            if len(competitors) == 0:
+                warnings.warn(f"No competitors of {ticker} found.\nMight be problem with fmpsdk. Input tickers manually.", UserWarning)
+                return None
+        else:
+            competitors = competitors_found
 
     if database_query_handler.get_ratios(tickers = competitors) is None:
 
@@ -337,6 +338,7 @@ def main()-> None:
         historic_years_number = historic_years_number,
         forecast_years_number = forecast_years_number
     )
+
 
 if __name__ == "__main__":
     main()
