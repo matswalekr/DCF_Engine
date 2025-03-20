@@ -21,7 +21,7 @@ class FinancialStatementsNotFoundError(Exception):
 historic_years: List[int] = []
 
 # Global definition of the competitors. Updated in the get_competitor_info
-competitors: List[str] = []
+competitors: List[str] = ["LMT", "GD", "RTX"]
 
 def get_latest_second_latest(statement: pd.DataFrame, column: str,)->Tuple[pd.DataFrame, pd.DataFrame]:
     """Returns a tuple of (latest_value, second_latest_value)"""
