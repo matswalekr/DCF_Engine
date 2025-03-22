@@ -249,7 +249,6 @@ def check_years(historic_years_number: int, forecast_years_number: int)-> Tuple[
     
     return (historic_years_number, forecast_years_number)
 
-
 def prepare_and_save_excel(ticker: str, historic_years_number: int,forecast_years_number: int)->None:
     """
     Writes the DCF into the Excel document."""
@@ -318,7 +317,6 @@ def prepare_and_save_excel(ticker: str, historic_years_number: int,forecast_year
         doc.save(path = name_file_final)
 
     print(f"\nFind the Excel containing the DCF under {name_file_final}.\n")
-
 
 def main()-> None:
     def get_args(name: str, prompt: str, type)->Any:
