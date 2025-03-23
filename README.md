@@ -14,7 +14,7 @@ Note that the Excel file is mainly controlled through the "Assumptions" sheet. F
 ## Usage
 For usage, run **make** in the command line. **Ticker**, **number of historic years** and **years to forecast** can be inputed as global variables in the command line using:
 
-![Alt text](./additional_files/command_line.png)
+![Video usage](./additional_files/usage_video.mov)
 
 
 Else, the program will ask for them. Note that the number historic years is constrained to 3-10 years and the forecasted years are constrained to up to 10 years.

@@ -41,8 +41,9 @@ def get_competitor_info(ticker: str)-> Optional[pd.DataFrame]:
     Gets the latest year according to the latest year found of the main stock.
     Returns None if no competitor info was found.
     """
-    # Use the global competitors
+    # Use the global competitors and historic_years
     global competitors
+    global historic_years
 
     assert(isinstance(ticker, str)), f"The ticker given to the function get_competitor_info was not of type str, but of type {type(ticker)}.\n"
 
@@ -59,16 +60,14 @@ def get_competitor_info(ticker: str)-> Optional[pd.DataFrame]:
         # If this fails, fall back to the manually inputted competitors
         # If this list is empty, return an error
         if len(competitors_found) == 0:
-            if len(competitors) == 0:
-                warnings.warn(f"No competitors of {ticker} found.\nMight be problem with fmpsdk. Input tickers manually.", UserWarning)
-                return None
+            warnings.warn(f"No competitors of {ticker} found.\nMight be problem with fmpsdk. Input tickers manually.", UserWarning)
+            return None
         else:
             competitors = competitors_found
 
     if database_query_handler.get_ratios(tickers = competitors) is None:
 
         # Get the latest year found of the main ticker
-        global historic_years
         latest_year: int = historic_years[0]
 
         years: List[int] = [latest_year, latest_year-1, latest_year-2]
