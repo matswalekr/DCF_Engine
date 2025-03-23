@@ -18,7 +18,7 @@ For usage, run **make** in the command line. **Ticker**, **number of historic ye
 
 
 Else, the program will ask for them. Note that the number historic years is constrained to 3-10 years and the forecasted years are constrained to up to 10 years.
-Only companies from the US can be considered can be considered for the DCF. However, other companies can be used as comparables.
+Only companies from the US can be used for the DCF. However, other companies can be used as comparables.
 
 To adjust the DCF, use the Assumptions and PPE & Depreciation page. By default, these are filled with the averages of the historic years.
 
