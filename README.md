@@ -12,7 +12,7 @@ The Excel also shows other valuation methods such as comparable multiples and hi
 Note that the Excel file is mainly controlled through the "Assumptions" sheet. Further changes can be made to the other sheets, but they may need to be unlocked or unhidden.
 
 ## Usage
-For usage, run **make** in the command line. **Ticker** **number of historic years** and **years to forecast** can be inputed as global variables in the command line using:
+For usage, run **make** in the command line. **Ticker**, **number of historic years** and **years to forecast** can be inputed as global variables in the command line using:
 
 ![Alt text](./additional_files/command_line.png)
 
