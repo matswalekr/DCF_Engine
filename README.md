@@ -27,7 +27,7 @@ To adjust the DCF, use the **Assumptions** and **PPE & Depreciation** page. By d
 
 Further, more fine grained adjustments can be done in the DCF page, but this is generally not encouraged and may lead to unexpected behavior.
 
-The main **Competitors** of the company will be tried to fill programatically. If this fails, they will need to be inputted in the [dcf_initialiser](/code/dcf_initialiser.py) by hand.
+The main **Competitors** of the company will be tried to fill programatically. If this fails, they will need to be inputted in the [dcf_initialiser](/DCF_Engine/dcf_initialiser.py) by hand.
 
 ## Assumptions
 The DCF is build on the following assumptions:
@@ -41,7 +41,7 @@ The DCF is build on the following assumptions:
 ## Problems & Work-to-be-done
 While the code works, the Excel usually has problems. It raises a warning when opening and does not include the full Football field chart with all its info. Manual adjustments are thus needed. This problem is likely due to the libraries used and not the code itself. This may be changed in the future.
  
-In addition, the competitors may need to be manually inputted and can not always be generated automatically. While the [fmpsdk](code/fmpsdk_query/fmpsdk_query.py) code has a method to query competitors, it does not work reliably and should not be used without manual double-checking.  
+In addition, the competitors may need to be manually inputted and can not always be generated automatically. While the [fmpsdk](DCF_Engine/fmpsdk_query/fmpsdk_query.py) code has a method to query competitors, it does not work reliably and should not be used without manual double-checking.  
 In the future, a database of the info will be established such that the financial data for companies does not need to be queried every time again.
 
 

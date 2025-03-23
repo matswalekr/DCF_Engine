@@ -1,0 +1,24 @@
+[project]
+name = "DCF_Enging"
+version = "0.1.1"
+description = "A Python module to write DCFs automatically into Excel files"
+authors = [{ name = "Mats Walker", email = "walma697@gmail.com" }]
+license = "MIT"
+dependencies = [
+    "sqlite3",
+    "pandas",
+    "wrds",
+    "openpyxl",
+    "pycel",
+    "fmpsdk",
+    "openai",
+    "numpy",
+    "yfinance"
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["DCF_Engine"]
