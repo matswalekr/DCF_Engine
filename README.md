@@ -5,13 +5,26 @@ This file helps to create DCFs for listed companies of the S&P500 index. The DCF
 
 The Excel also shows other valuation methods such as comparable multiples and historic market valuations.
 
+![alt text](./additional_files/Apple_DCF.png)
+
+[**Click here to open an example DCF for Apple**](./resources/DCF_template.xltm)
+
 Note that the Excel file is mainly controlled through the "Assumptions" sheet. Further changes can be made to the other sheets, but they may need to be unlocked or unhidden.
 
 ## Usage
-For usage, run **make** in the command line. This will then ask for the **Ticker** of the company, the **number of historic years** (3-10 years) to be taken into account and the **years to forecast**(up to 10 years). 
-Note that only companies from the US can be considered. 
+For usage, run **make** in the command line. **Ticker** **number of historic years** and **years to forecast** can be inputed as global variables in the command line using:
 
-To adjust the DCF, use the Assumptions and PPE & Depreciation page. By default, these are filled with the averages of the last years.
+![Alt text](./additional_files/command_line.png)
+
+
+Else, the program will ask for them. Note that the number historic years is constrained to 3-10 years and the forecasted years are constrained to up to 10 years.
+Only companies from the US can be considered can be considered for the DCF. However, other companies can be used as comparables.
+
+To adjust the DCF, use the Assumptions and PPE & Depreciation page. By default, these are filled with the averages of the historic years.
+
+![alt text](./additional_files/assumptions_sheet.png)
+
+
 Further, more fine grained adjustments can be done in the DCF page, but this is generally not encouraged and may lead to unexpected behavior.
 
 The main **Competitors** of the company will be tried to fill programatically. If this fails, they will need to be inputted in the [dcf_initialiser](/code/dcf_initialiser.py) by hand.
@@ -34,7 +47,7 @@ In the future, a database of the info should be established such that the financ
 
 ## Dependencies
 As the code queries multiple APIs for the necessary information, it has many dependencies. This includes the following unusual ones:  
-- **wrds** (Wharton financial data for research projects) (Requires a valid account)  
+- **wrds** (Wharton Financial Data for Research Projects) (Requires a valid account)  
 - **yfinance**   
 - **fmpsdk** (Requires valid, but free account)
 - **pycel** and **openpyxl** (two libraries used for the interaction with excel)
