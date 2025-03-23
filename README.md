@@ -20,7 +20,7 @@ For usage, run **make** in the command line. **Ticker**, **number of historic ye
 Else, the program will ask for them. Note that the number historic years is constrained to 3-10 years and the forecasted years are constrained to up to 10 years.
 Only companies from the US can be used for the DCF. However, other companies can be used as comparables.
 
-To adjust the DCF, use the Assumptions and PPE & Depreciation page. By default, these are filled with the averages of the historic years.
+To adjust the DCF, use the **Assumptions** and **PPE & Depreciation** page. By default, these are filled with the averages of the historic years.
 
 ![alt text](./additional_files/assumptions_sheet.png)
 
@@ -34,19 +34,19 @@ The DCF is build on the following assumptions:
 - **Growth of sales**:  Average throughout the historic period
 - **Risk-free rate**:   10 year US treasury bills
 - **Market return**:    Average return of S&P500 throughout the historic period
-- **Beta Equity**:      Calculated based on other assumptions
+- **Beta Equity**:      Calculated based on correlation with S&P500
 - **Financial Ratios**: Average of the last years
 - **Multiples**:        Average of competitors
 
 ## Problems & Work-to-be-done
-While the code works, the Excel usually has problems. It raises a warning when opening and does not include the full Football field chart with all its info. This problem is likely due to the libraries used and not the code itself. This may be changed in the future.
+While the code works, the Excel usually has problems. It raises a warning when opening and does not include the full Football field chart with all its info. Manual adjustments are thus needed. This problem is likely due to the libraries used and not the code itself. This may be changed in the future.
  
 In addition, the competitors may need to be manually inputted and can not always be generated automatically. While the [fmpsdk](code/fmpsdk_query/fmpsdk_query.py) code has a method to query competitors, it does not work reliably and should not be used without manual double-checking.  
-In the future, a database of the info should be established such that the financial data for companies does not need to be queried every time again.
+In the future, a database of the info will be established such that the financial data for companies does not need to be queried every time again.
 
 
 ## Dependencies
-As the code queries multiple APIs for the necessary information, it has many dependencies. This includes the following unusual ones:  
+To query necessary infomation from multiple APIs, the code has many dependencies. These include the following unusual ones:  
 - **wrds** (Wharton Financial Data for Research Projects) (Requires a valid account)  
 - **yfinance**   
 - **fmpsdk** (Requires valid, but free account)
