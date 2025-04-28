@@ -13,7 +13,7 @@ import pandas as pd
 import warnings
 import os
 
-# Customer Exception for when financial statements where not found
+# Custom Exception for when financial statements where not found
 class FinancialStatementsNotFoundError(Exception):
     pass
 
