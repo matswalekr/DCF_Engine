@@ -52,3 +52,4 @@ To query necessary infomation from multiple APIs, the code has many dependencies
 - **yfinance**   
 - **fmpsdk** (Requires valid, but free account)
 - **pycel** and **openpyxl** (two libraries used for the interaction with excel)
+- **DCF_Engine** Self-written library to facilitate work with Excel

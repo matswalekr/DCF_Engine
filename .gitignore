@@ -21,7 +21,7 @@ env/
 .DS_Store
 Thumbs.db
 
-# Logs and databases
+# Logs, databases
 *.log
 *.sqlite3
 *.db
