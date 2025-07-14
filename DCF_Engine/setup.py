@@ -13,7 +13,8 @@ setup(
         "fmpsdk",
         "openai", # Only necessary if API_KEY
         "numpy",
-        "yfinance"
+        "yfinance",
+        "git+https://github.com/matswalekr/Excel_Engine" # Own github repository for working with Excel
 
     ],
     description="A Python module to write DCFs automatically into Excel files",

@@ -7,3 +7,4 @@ fmpsdk
 openai
 numpy
 yfinance
+git+https://github.com/matswalekr/Excel_Engine 
